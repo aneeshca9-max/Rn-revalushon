@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+<meta charset="UTF-8">
+<title>RN ENERGY</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a0a0a">
+<link rel="apple-touch-icon" href="1768933096409.jpg">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+body{margin:0;font-family:system-ui;background:#0a0a0a;color:#fff;}
+h1{text-align:center;padding:14px;background:#111;}
+.container{padding:14px;}
+.card{background:#1a1a1a;border-radius:18px;padding:18px;margin-bottom:18px;box-shadow:0 10px 30px rgba(0,0,0,.8);}
+.row{display:flex;justify-content:space-between;align-items:center;}
+.switch{padding:14px 34px;border-radius:40px;border:none;font-size:18px;font-weight:bold;background:#ff3b3b;color:#fff;}
+.switch.on{background:#00ff66;color:#000;}
+.display{text-align:center;}
+.value{font-size:42px;font-weight:800;}
+.volt{color:#00ff66;}
+.amp{color:#00eaff;}
+.status{text-align:center;font-weight:700;}
+.warn{color:#ffaa00;}
+.restart{background:#ff0000;color:#fff;padding:12px 28px;border:none;border-radius:30px;font-size:16px;font-weight:bold;}
+.tanks{display:flex;justify-content:space-around;align-items:center;position:relative;}
+.tank{width:110px;height:180px;border:4px solid #777;border-radius:16px;background:#333;overflow:hidden;position:relative;}
+.water{position:absolute;bottom:0;width:100%;transition:.7s;}
+.percent{position:absolute;top:50%;width:100%;text-align:center;font-weight:800;font-size:18px;color:#fff;text-shadow:0 0 6px #000;}
+.label{text-align:center;color:#aaa;margin-top:6px;}
+.pipe{position:absolute;left:140px;right:140px;height:8px;background:#444;border-radius:10px;}
+.flow{height:100%;width:30%;background:#00ff66;animation:flow 1s linear infinite;display:none;}
+@keyframes flow{from{margin-left:-30%;}to{margin-left:100%;}}
+i{margin-right:6px;}
+</style>
+</head>
+<body>
+
+<h1><i class="fa-solid fa-bolt"></i> RN ENERGY</h1>
+
+<div class="container">
+<div class="card">
+  <div class="row"><b><i class="fa-solid fa-arrows-rotate"></i> Mode</b><b id="modeTxt">AUTO</b></div><br>
+  <button class="switch on" onclick="toggleMode()"><i class="fa-solid fa-rotate"></i> MODE</button>
+</div>
+
+<div class="card display">
+  <div class="value volt"><i class="fa-solid fa-bolt"></i> <span id="volt">230</span> V</div>
+  <div class="value amp"><i class="fa-solid fa-wave-square"></i> <span id="amp">0.0</span> A</div>
+</div>
+
+<div class="card">
+  <div class="status" id="statusTxt"><i class="fa-solid fa-circle-info"></i> NORMAL</div>
+  <div class="status warn" id="timerTxt"></div><br>
+  <button class="restart" onclick="manualRestart()"><i class="fa-solid fa-rotate-right"></i> RESTART</button>
+</div>
+
+<div class="card tanks">
+  <div>
+    <div class="tank"><div class="water" id="tank"></div><div class="percent" id="tankPct">70%</div></div>
+    <div class="label"><i class="fa-solid fa-water"></i> Upper Tank</div>
+  </div>
+  <div class="pipe"><div class="flow" id="flow"></div></div>
+  <div>
+    <div class="tank"><div class="water" id="bore"></div><div class="percent" id="borePct">45%</div></div>
+    <div class="label"><i class="fa-solid fa-droplet"></i> Lower Tank</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="row"><b><i class="fa-solid fa-fan"></i> Motor</b><b id="motorState">OFF</b></div><br>
+  <button class="switch" id="motorBtn" onclick="toggleMotor()"><i class="fa-solid fa-power-off"></i> OFF</button>
+</div>
+</div>
+
+<script>
+const AUTO_RESTART_DELAY = 10;
+const DRY_RUN_CLEAR_LEVEL = 20;
+let motor=false, mode="AUTO", boreLevel=45, tankLevel=70, dryRun=false, restartTimer=null, countdown=0;
+
+function setMotor(state){
+  motor=state;
+  motorBtn.classList.toggle("on",motor);
+  motorBtn.innerHTML = motor ? '<i class="fa-solid fa-power-off"></i> ON' : '<i class="fa-solid fa-power-off"></i> OFF';
+  motorState.textContent = motor ? "ON" : "OFF";
+  flow.style.display = motor ? "block" : "none";
+}
+function toggleMotor(){ if(mode==="AUTO" && dryRun) return; setMotor(!motor); }
+function toggleMode(){ mode = mode==="AUTO" ? "MANUAL" : "AUTO"; modeTxt.textContent = mode; }
+function manualRestart(){ dryRun=false; timerTxt.textContent=""; statusTxt.innerHTML='<i class="fa-solid fa-circle-info"></i> NORMAL'; }
+function waterColor(level, el){ if(level<=20) el.style.background="red"; else if(level<=60) el.style.background="yellow"; else el.style.background="#00ff66"; }
+
+function update(){
+  let v = 200 + Math.random()*40;
+  let a = motor ? (5+Math.random()*3) : 0;
+  volt.textContent = v.toFixed(0); amp.textContent = a.toFixed(1);
+  if(motor){ boreLevel = Math.max(0,boreLevel-1); tankLevel = Math.min(100,tankLevel+1); }
+  bore.style.height = boreLevel+"%"; tank.style.height = tankLevel+"%";
+  borePct.textContent = boreLevel+"%"; tankPct.textContent = tankLevel+"%";
+  waterColor(boreLevel,bore); waterColor(tankLevel,tank);
+}
+setInterval(update,2000);
+</script>
+</body>
+</html>
